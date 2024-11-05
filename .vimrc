@@ -20,8 +20,8 @@ silent! endwhile
 filetype plugin on
   " :help ft-markdown-plugin
 let g:markdown_folding = 1
-let g:markdown_recommended_style=0 " the Tim Pope ftp markdown.vim set shfitwidth=4
-let g:markdown_fenced_languages = ['python','html','java','bash=sh','css']
+"let g:markdown_recommended_style=0 " the Tim Pope ftp markdown.vim set shfitwidth=4
+"let g:markdown_fenced_languages = ['python','html','java','bash=sh','css']
 
 "good for :find, no need to use !find, the system's find cmd
 "set path=.,/usr/include, "default setting, no need to specify comma

@@ -8,12 +8,9 @@ git pull origin main;
 
 function doIt() {
   rsync --exclude ".git/" \
-    --exclude ".DS_Store" \
-    --exclude ".osx" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \
     --exclude "LICENSE" \
-    --exclude ".tags" \
     -avh --no-perms . ~;
   source ~/.bash_profile;
 }
@@ -28,6 +25,17 @@ else
     mkdir -p ~/.vim/autoload
     cp $(pwd)/resources/vim/plug.vim ~/.vim/autoload/
     vi +PlugInstall +qall
+
+    apt install lua5.4
+    Z_LUA_PATH="${HOME}/.local/bin"
+    mkdir -p $Z_LUA_PATH
+    wget https://raw.githubusercontent.com/skywind3000/z.lua/master/z.lua -O $Z_LUA_PATH/z.lua
+    chmod +x $Z_LUA_PATH/z.lua
+    cat <<EOL >> ~.bashrc
+    eval "$(lua $Z_LUA_PATH/z.lua --init bash)"
+    EOL
+    source ~/.bashrc
+
   fi;
 fi;
 unset doIt;
