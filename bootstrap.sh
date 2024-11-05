@@ -31,9 +31,7 @@ else
     mkdir -p $Z_LUA_PATH
     wget https://raw.githubusercontent.com/skywind3000/z.lua/master/z.lua -O $Z_LUA_PATH/z.lua
     chmod +x $Z_LUA_PATH/z.lua
-    cat <<EOL >> ~.bashrc
-    eval "$(lua $Z_LUA_PATH/z.lua --init bash)"
-    EOL
+    echo "eval \"\$(lua $Z_LUA_PATH/z.lua --init bash)\"" >> ~/.bashrc
     source ~/.bashrc
 
   fi;
