@@ -1,3 +1,6 @@
+let g:init_path = getcwd()
+command GoInitPath :execute 'lcd' g:init_path
+
 """"""""""""""""""""
 "
 " Vim
@@ -23,10 +26,17 @@ let g:markdown_folding = 1
 "let g:markdown_recommended_style=0 " the Tim Pope ftp markdown.vim set shfitwidth=4
 "let g:markdown_fenced_languages = ['python','html','java','bash=sh','css']
 
+set mouse=a
+
+set undodir=~/.vim/undodir
+set undofile
+
 "good for :find, no need to use !find, the system's find cmd
 "set path=.,/usr/include, "default setting, no need to specify comma
 set path=.
 set path+=**
+set wildignore+=**/node_modules/**
+set wildignore+=**/.git/**
 set wildmenu
 
 set incsearch
@@ -48,13 +58,27 @@ set sidescrolloff=15
 "wm is no good that, if I work on different OS, the margin is changing
 "tw is better for standardization
 "luckily, wrap margin(wm) has lower priority than text width (tw), check :help wm and :help tw
-set wrapmargin=0
+" set wrapmargin=0
 highlight ColorColumn ctermbg=magenta ctermfg=blue
-"set colorcolumn=81
+" my filetypes to mark colorcolumn
+let g:cc_filetypes = '\(py\|html\|css\|js\|md\|lua\|java\|cs\|scss\)'
+
+augroup ColorColumn
+  autocmd!
+  " buftype means those nowrite, readonly, quickfix attribute
+  autocmd FileType * if &buftype == '' && match(expand('%:e'),g:cc_filetypes) != -1
+        \ | setlocal colorcolumn=101 | endif
+  " autocmd BufLeave * if &buftype == '' && match(expand('%:e'),g:cc_filetypes) != -1
+  " \ | setlocal colorcolumn= | endif
+augroup END
+" set colorcolumn=101
 "match ColorColumn "\%101v."
 match ColorColumn "\%>101v."
 "colorcoumn is a good matched use with text width
 set textwidth=100
+" To avoid problems with flags that are added in the future,
+" use the "+=" and "-=" feature of ":set" |add-option-flags|.
+set formatoptions+="lv"
 
 "set autocomplete option
 set completeopt=menuone,noselect
@@ -109,8 +133,8 @@ set list
 
  "remove traling spaces
 autocmd BufWritePre * :%s/\s\+$//e
-
-
+"autocmd BufWritePre *.md :%s/\s\+$//e
+"autocmd BufWritePre *.py :%s/\s\+$//e
 
 """"""""""""""""""""
 "
@@ -130,20 +154,52 @@ let g:netrw_winsize = 15
 
 
 "use command FS to start a fixed width vertical netrw explorer
-command! -nargs=* FS Vex | set wfw
 
+function! Explore_sitepackages(chcwd)
+  if has_key(environ(), 'VIRTUAL_ENV')
+    let py_version = execute('!python --version')
+    let py_version = matchstr(py_version,"Python \\zs\\(3\...\\)\\ze")
+    let sitepackages =  expand('$VIRTUAL_ENV') . '/lib/python' . py_version . '/site-packages'
+    "echo sitepackages
+    execute('Vexplore ' . sitepackages . ' | set wfw')
+
+    if a:chcwd
+      execute('tcd ' . sitepackages)
+    endif
+  else
+    return
+  endif
+endfunction
+
+command! -nargs=* FS Vex <args> | set wfw
+command! -nargs=* FSV execute('tabe') | call Explore_sitepackages(1)
+command! -nargs=* FSVW call Explore_sitepackages(0)
 
 """""""""""""""""""""""
 "
 " Vim:Remapping keys
 "
 """"""""""""""""""""""
+let mapleader = " "
+
+" pasting repetitive "0 and system clipboard
+nnoremap <silent> <leader>p "0p
+nnoremap <silent> <leader>P "0P
+nnoremap <silent> <leader>= "+p
+nnoremap <silent> <leader>+ "+P
+vnoremap <silent> <leader>p "0p
+vnoremap <silent> <leader>P "0P
+vnoremap <silent> <leader>= "+p
+vnoremap <silent> <leader>+ "+P
+" TODO yank too if possible
 
 " +/- split windows size
 map + <C-W>5>
 map - <C-W>5<
 map <PageDown> <C-w>5-
 map <PageUp> <C-w>5+
+map zh 10z<Left>
+map zl 10z<Right>
 
 nnoremap <silent> <C-y> 5<C-y>
 nnoremap <silent> <C-e> 5<C-e>
@@ -185,7 +241,7 @@ endif
 
 let mapleader = " "
 " Terminal related
-nnoremap <silent> <leader>t :terminal<CR>
+nnoremap <silent> <leader>st :split<CR>:terminal<CR>
 nnoremap <silent> <leader>vt :vertical terminal<CR>
 tnoremap <silent> <Esc> <C-\><C-n>
 if has('linux')
@@ -208,6 +264,15 @@ set timeout ttimeoutlen=50 "needed when using Escape key code
 vnoremap <silent> J :move '>+1<CR>gv-gv
 vnoremap <silent> K :move '<-2<CR>gv-gv
 
+" helps mostly auto new window in vertical for :help, :Git
+augroup made_vertical
+  autocmd!
+  autocmd FileType fugitive,help,netrw,git
+        \ setlocal bufhidden=unload |
+        \ wincmd H |
+        \ vertical resize 79 |
+        \ if match(expand("<amatch>"),'\(help\|fugitive\|netrw\|git\)') != -1| setlocal wfw | endif
+augroup END
 
 
 
@@ -271,7 +336,7 @@ function! AtomicRenameCurBuf(new_name)
   exe 'bd' . curbuf
   echo "Moved " . curbuf_filename . ' to ' . a:new_name
 endfunction
-command! -nargs=1 Move call AtomicRenameCurBuf(<f-args>)
+command! -nargs=1 -complete=buffer Move call AtomicRenameCurBuf(<f-args>)
 
 """"""""""""""""""""
 "
@@ -313,9 +378,9 @@ autocmd FileType md silent! setlocal nolist
 autocmd BufEnter *.md silent! nnoremap <silent> <C-k> :call search('\%' . virtcol('.') . 'v\S', 'bW')<CR>zz
 autocmd BufEnter *.md silent! nnoremap <silent> <C-j> :call search('\%' . virtcol('.') . 'v\S', 'W')<CR>zz
 
-autocmd FileType python set sw=2
-autocmd FileType python set ts=2
-autocmd FileType python set sts=2
+autocmd FileType python set shiftwidth=4
+autocmd FileType python set tabstop=4
+autocmd FileType python set softtabstop=4
 
 " https://vim.fandom.com/wiki/Indenting_source_code#.27autoindent.27
 " somehow in neovim the python indentation is 4 spaces, no good for screen to contain more information
@@ -390,66 +455,32 @@ let g:UltiSnipsEditSplit="vertical"
 ab a2z abcdefghijklmnopqrstuvwxyz
 ab z2a zyxwvutsrqponmlkjihgfedcba
 inoreab vim2x2grid ┌───┬───┐<CR>│   │   │<CR>├───┼───┤<CR>│   │   │<CR>└───┴───┘
-noreab zall ∀
-noreab zex ∃
-noreab znex ∄
-noreab z1s ₁
-noreab z2s ₂
+inoreab zall ∀
+inoreab zex ∃
+inoreab znex ∄
+inoreab z1s ₁
+inoreab z2s ₂
 " Boolean, Integer, Rational, Real, Complex, Quaterion, Prime
-inoreab zB 𝔹  | inoreab zI ℤ  | inoreab zQ ℚ  | inoreab zR ℝ  | inoreab zC ℂ  |
-inoreab zQ ℍ  | inoreab zP ℙ  | noreab zas ₐ  | noreab zes ₑ  | noreab zhs ₕ  |
-noreab zis ᵢ  | noreab zjs ⱼ  | noreab zks ₖ  | noreab zls ₗ  | noreab zms ₘ  |
-noreab zns ₙ  | noreab zos ₒ  | noreab zps ₚ  | noreab zrs ᵣ  | noreab zss ₛ  |
-noreab zts ₜ  | noreab zus ᵤ  | noreab zvs ᵥ  | noreab zxs ₓ  |
+inoreab zB 𝔹  | inoreab zI ℤ  | inoreab zQ ℚ  | inoreab zR ℝ  | inoreab zC ℂ
+inoreab zQ ℍ  | inoreab zP ℙ  | inoreab zas ₐ | inoreab zes ₑ | inoreab zhs ₕ
+inoreab zis ᵢ | inoreab zjs ⱼ | inoreab zks ₖ | inoreab zls ₗ | inoreab zms ₘ
+inoreab zns ₙ | inoreab zos ₒ | inoreab zps ₚ | inoreab zrs ᵣ | inoreab zss ₛ
+inoreab zts ₜ | inoreab zus ᵤ | inoreab zvs ᵥ | inoreab zxs ₓ |
 
-noreab zaS ᵃ  | noreab zbS ᵇ  | noreab zcS ᶜ  | noreab zdS ᵈ  | noreab zeS ᵉ  |
-noreab zfS ᶠ  | noreab zgS ᵍ  | noreab zhS ʰ  | noreab ziS ⁱ  | noreab zjS ʲ  |
-noreab zkS ᵏ  | noreab zlS ˡ  | noreab zmS ᵐ  | noreab znS ⁿ  | noreab zoS ᵒ  |
-noreab zpS ᵖ  | noreab zrS ʳ  | noreab zsS ˢ  | noreab ztS ᵗ  | noreab zuS ᵘ  |
-noreab zvS ᵛ  | noreab zwS ʷ  | noreab zxS ˣ  | noreab zyS ʸ  | noreab zzS ᶻ  |
+inoreab zaS ᵃ | inoreab zbS ᵇ | inoreab zcS ᶜ | inoreab zdS ᵈ | inoreab zeS ᵉ
+inoreab zfS ᶠ | inoreab zgS ᵍ | inoreab zhS ʰ | inoreab ziS ⁱ | inoreab zjS ʲ
+inoreab zkS ᵏ | inoreab zlS ˡ | inoreab zmS ᵐ | inoreab znS ⁿ | inoreab zoS ᵒ
+inoreab zpS ᵖ | inoreab zrS ʳ | inoreab zsS ˢ | inoreab ztS ᵗ | inoreab zuS ᵘ
+inoreab zvS ᵛ | inoreab zwS ʷ | inoreab zxS ˣ | inoreab zyS ʸ | inoreab zzS ᶻ
 
-noreab zAS ᴬ  | noreab zBS ᴮ  | noreab zDS ᴰ  | noreab zES ᴱ  | noreab zGS ᴳ  |
-noreab zHS ᴴ  | noreab zIS ᴵ  | noreab zJS ᴶ  | noreab zKS ᴷ  | noreab zLS ᴸ  |
-noreab zMS ᴹ  | noreab zNS ᴺ  | noreab zOS ᴼ  | noreab zPS ᴾ  | noreab zRS ᴿ  |
-noreab zTS ᵀ  | noreab zUS ᵁ  | noreab zVS ⱽ  | noreab zWS ᵂ  |
+inoreab zAS ᴬ | inoreab zBS ᴮ | inoreab zDS ᴰ | inoreab zES ᴱ | inoreab zGS ᴳ
+inoreab zHS ᴴ | inoreab zIS ᴵ | inoreab zJS ᴶ | inoreab zKS ᴷ | inoreab zLS ᴸ
+inoreab zMS ᴹ | inoreab zNS ᴺ | inoreab zOS ᴼ | inoreab zPS ᴾ | inoreab zRS ᴿ
+inoreab zTS ᵀ | inoreab zUS ᵁ | inoreab zVS ⱽ | inoreab zWS ᵂ |
 
-noreab zM= ⎧<Down><Left>⎪<Down><Left>⎨<Down><Left>⎪<Down><Left>⎩
-noreab zM33 ⎧<Space>0<Space><Space>0<Space><Space>0<Space>⎫<Down><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>⎪<Space>0<Space><Space>0<Space><Space>0<Space>⎪<Down><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>⎩<Space>0<Space><Space>0<Space><Space>0<Space>⎭
+inoreab zM= ⎧<Down><Left>⎪<Down><Left>⎨<Down><Left>⎪<Down><Left>⎩
+inoreab zM33 ⎧<Space>0<Space><Space>0<Space><Space>0<Space>⎫<Down><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>⎪<Space>0<Space><Space>0<Space><Space>0<Space>⎪<Down><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left><Left>⎩<Space>0<Space><Space>0<Space><Space>0<Space>⎭
 
-""""""""""""""""""""
-"
-" ctags things, tagbar, gutentags
-"
-""""""""""""""""""""
-set tags=./.tags;,.tags
-nmap <F2> :TagbarToggle<CR>
-""""""""""""""""""""
-"
-" vim-airline
-"
-""""""""""""""""""""
-let g:airline_theme='simple'
-
-" Let vim-airline to turn on vim-tagbar
-let g:airline#extensions#tagbar#enabled = 1
-
-" related to https://vi.stackexchange.com/questions/37577/changing-airline-vim-z-section?rq=1
-if !exists('g:airline_symbols')
-  let g:airline_symbols = {}
-endif
-let g:airline_symbols.colnr = '  ㏇:'
-
-
-let g:airline_section_y = airline#section#create_right(['ffenc','BN: %{bufnr("%")}'])
-
-
-""""""""""""""""""""
-"
-" xmlEdit
-"
-""""""""""""""""""""
-
-let g:xmledit_enable_html=1
 
 """"""""""""""""""""
 "
@@ -484,6 +515,44 @@ sunmap b
 sunmap e
 sunmap ge
 
+""""""""""""""""""""
+"
+" vim-airline or nvim-lualine
+"
+""""""""""""""""""""
+if !has('nvim')
+  let g:airline_theme='simple'
+
+  " Let vim-airline to turn on vim-tagbar
+  let g:airline#extensions#tagbar#enabled = 1
+
+  " related to https://vi.stackexchange.com/questions/37577/changing-airline-vim-z-section?rq=1
+  " if !exists('g:airline_symbols')
+  "   let g:airline_symbols = {}
+  " endif
+  " TODO airline is problematic
+  "let g:airline_symbols.colnr = '  ㏇:'
+  "let g:airline_section_y = airline#section#create_right(['ffenc','BN: %{bufnr("%")}'])
+else
+  command! -nargs=? TabRename LualineRenameTab <args>
+endif
+
+
+""""""""""""""""""""
+"
+" ctags things, tagbar, gutentags
+"
+""""""""""""""""""""
+
+set tags=./.tags;,.tags
+
+""""""""""""""""""""
+"
+" xmlEdit
+"
+""""""""""""""""""""
+
+let g:xmledit_enable_html=1
 
 
 
@@ -499,48 +568,17 @@ sunmap ge
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+nmap <F2> :TagbarToggle<CR>
+" Keymap Keyremap asd81923
+" <C-m> and <C-j> just use <CR>
+imap <C-@> <Nop>
+imap <C-c> <Nop>
+" imap <C-i> <Nop> " but cannot do, <Tab> become <Nop>
+imap <C-j> <Nop>
+" imap <C-g> <Nop> " may be useful for <C-g>u
+" imap <C-m> <Nop> # but cannot do, <CR> no working
+imap <C-q> <Nop>
+imap <Del> <Nop>
 """"""""""""""""""""
 "
 " End of all
