@@ -4,11 +4,12 @@
 
   `init.powershell.vim` is for Windows nvim temporarily.
 
-# TODO
+# Shell setup
 
- - [x] add z.lua, `apt install lua5.4`
- - [ ] python tools: pipx, uv, pyenv etc
- - [ ] ensure lazygit, git (+ git configs)
- - [ ] add opencode, codex
- - [ ] add zsh, zshrc, oh-my-zsh, powerlevel-theme (without configuration)
- - [ ] add fzf
+Install packages as root:
+
+`sudo ./init_shell_packages.sh`
+
+Install oh-my-zsh, powerlevel10k, and symlink the zsh config as the target user:
+
+`./init_shell.sh`
