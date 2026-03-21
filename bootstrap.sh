@@ -23,12 +23,17 @@ function link_nvim_config() {
 
 function install_terminal_tools() {
   local z_lua_path="${HOME}/.local/bin"
+  local z_lua_init='eval "$(lua '"${z_lua_path}"'/z.lua --init bash)"'
 
-  apt install lua5.4
+  apt install -y lua5.4 ripgrep
   mkdir -p "${z_lua_path}"
   wget https://raw.githubusercontent.com/skywind3000/z.lua/master/z.lua -O "${z_lua_path}/z.lua"
   chmod +x "${z_lua_path}/z.lua"
-  echo "eval \"\$(lua ${z_lua_path}/z.lua --init bash)\"" >> ~/.bashrc
+
+  if ! grep -Fqx "${z_lua_init}" ~/.bashrc; then
+    echo "${z_lua_init}" >> ~/.bashrc
+  fi
+
   source ~/.bashrc
 }
 
