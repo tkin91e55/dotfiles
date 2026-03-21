@@ -24,15 +24,15 @@ silent! while 0
 silent! endwhile
 
 filetype plugin on
-
-
-
-
-
-
-
-
-
+  " :help ft-markdown-plugin
+  " which version of ftplugin's markdown actually being used?
+  " https://github.com/preservim/vim-markdown
+  " https://github.com/tpope/vim-markdown
+  " https://github.com/prurigro/vim-markdown-concealed
+  " >  I think mine was the first Markdown syntax file for Vim and for a while it was included in
+  " >  the Debian Vim package. After I let it languish a bit, Tim Pope's excellent plugin became the
+  " >  standard and is included in the official Vim distributions.
+  " it seems a lot not even mentioned
 let g:markdown_folding = 1
 let g:markdown_recommended_style=0 " the Tim Pope ftp markdown.vim set shfitwidth=4
 if !has('macunix') || has('nvim')
@@ -46,8 +46,8 @@ set mouse=a
 set undodir=~/.vim/undodir
 set undofile
 
-
-
+"good for :find, no need to use !find, the system's find cmd
+"set path=.,/usr/include, "default setting, no need to specify comma
 set path=.
 set path+=**
 set wildignore+=**/node_modules/**
@@ -202,7 +202,7 @@ vnoremap <silent> <leader>p "0p
 vnoremap <silent> <leader>P "0P
 vnoremap <silent> <leader>= "+p
 vnoremap <silent> <leader>+ "+P
-
+" TODO yank too if possible
 
 " +/- split windows size
 map + <C-W>5>
@@ -215,7 +215,7 @@ map zl 10z<Right>
 nnoremap <silent> <C-y> 5<C-y>
 nnoremap <silent> <C-e> 5<C-e>
 
-" move vertically to next non-blank
+" move vertically to next non-blank, TODO how to have this only with *.md?
 " refer to `:help search`, `:help virtcol`, `:help atom`, `:help search-range`
 " `:help virtcol`, returning the virtual column number at the cursor
 " `:help search`, flag 'b' is backwards, flag 'W' is no wrap of buffer
@@ -225,9 +225,9 @@ nnoremap <silent> <C-e> 5<C-e>
 " `.` between atoms is just concatenation
 nnoremap <silent> <C-k> :call search('\%' . virtcol('.') . 'v\S', 'bW')<CR>
 nnoremap <silent> <C-j> :call search('\%' . virtcol('.') . 'v\S', 'W')<CR>
-
-
-
+" TODO map these in visual mode too, the follow not working properly, the problem is search() return
+" once enter : mode, visual mode left therefore even virtcol(".") is not the value I expected
+" to normal mode, may check the `:help m<` and move_until_char_changes.vim
 "vnoremap <C-k> :call search('\%' . virtcol('.') . 'v\S', 'bWs')<CR>
 "vnoremap <C-j> :call search('\%' . virtcol('.') . 'v\S', 'Ws')<CR>
 
@@ -308,11 +308,11 @@ augroup END
 "
 """""""""""""""""""""""
 
-
-
-
-
-
+" TODO `:help i_CTRL-C`
+" Problem: cancel this, as collided <C-H> with Ultisnippet:
+"          ~/.config/nvim/plugged/ultisnips/autoload/UltiSnips/map_keys.vim, line 66
+"          Use Home or End buttons instead, <C-H> in UltiSnips is snippet menu to choose
+" * also can us <C-o>^ (maybe <HOME> or <C-o>$ (just <END>)
 "inoremap <silent> <C-h> <ESC>I
 "inoremap <silent> <C-l> <ESC>A
 " inoremap () ()<ESC>i # just use <C-s> surround.vim
@@ -331,8 +331,8 @@ command! PrintFilePath echo expand('%:p')
 command! PutFilePath put=expand('%:p')
 
 
-"move current line to the end of buffer without moving cursor
-
+"move current line to the end of buffer without moving cursor, TODO how to repeat with @: or .?
+"if without such function, I would ":norm ddGp``" and @: and repeat by @@
 let mapleader = "c"
 nnoremap <leader>m :call MoveToEnd()<CR>
 
@@ -406,8 +406,8 @@ command! -register CopyMatches call CopyMatches(<q-reg>)
 " For CPP only, for easier compiling and testing
 autocmd BufEnter *.\(cpp\|h\|hpp\) silent! lcd %:p:h
 
-
-
+" For Markdown , for easier compiling and testing, why? but it affects some function that require
+" global project control, like `:find `
 "autocmd BufEnter *.md silent! lcd %:p:h " the problem is changing the working directory unattended
 " only first line auto insert // not the following lines
 
@@ -448,7 +448,7 @@ let g:UltiSnipsEditSplit="vertical"
 "
 """"""""""""""""""""
 
-
+" maybe interested, https://github.com/arthurxavierx/vim-unicoder#subscripts
 " check inoreab and cnoreab, there are full-id, end-id, non-id types of lhs, keyword are just
 " 'abc123' but not special characters :#+/\.
 ab a2z abcdefghijklmnopqrstuvwxyz
@@ -488,8 +488,8 @@ inoreab zM33 ⎧<Space>0<Space><Space>0<Space><Space>0<Space>⎫<Down><Left><Lef
 """"""""""""""""""""
 
 "for django additional surrounding, more check `:help surround-customizing`
-
-
+" TODO <C-s> in insert mode to add the surrounding too
+" need to in visual with S'the textobject'
 let g:surround_{char2nr("v")} = "{{ \r }}"
 let g:surround_{char2nr("{")} = "{{ \r }}"
 let g:surround_{char2nr("%")} = "{% \r %}"
@@ -530,7 +530,7 @@ if !has('nvim')
   " if !exists('g:airline_symbols')
   "   let g:airline_symbols = {}
   " endif
-
+  " TODO airline is problematic
   "let g:airline_symbols.colnr = '  ㏇:'
   "let g:airline_section_y = airline#section#create_right(['ffenc','BN: %{bufnr("%")}'])
 else
@@ -544,8 +544,8 @@ endif
 "
 """"""""""""""""""""
 
-
-
+"no need if gutentags is here, dulplicated tagging
+"unless there is need to manually to generate different set of tags
 set tags=./.tags;,.tags
 "set tags=''
 
@@ -565,7 +565,7 @@ let g:gutentags_ctags_exclude = ['node_modules','site_packages']
 let g:gutentags_ctags_extra_args = ['--languages=markdown']
 
 " https://pavelespinal.com/short-articles/vim-gutentags-ignoring-exclude-parameters-from-ctags/
-
+" need if '-p' relative path, then relative, otherwise abs match abs path
 " for exclude option, use the below but not let g:gutentags_ctags_extra_args += ['--exclude="*.json"']
 "let g:gutentags_ctags_exclude = ['MaybeABSorRELpath'] "do it inside the repo
 
@@ -574,7 +574,7 @@ let g:gutentags_ctags_extra_args = ['--languages=markdown']
 "let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
 "let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 
-
+" TODO, there is actually g:gutentags_file_list_command to specify git files to be tagged
 
 nmap <F2> :TagbarToggle<CR>
 " Keymap Keyremap asd81923

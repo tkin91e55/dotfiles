@@ -58,7 +58,7 @@ function NewTab(newTabName, bufs)
 
   let R = min([L-2,14])
   if R > 16
-    echo ">16 items found"
+    echo ">16 items found, Note maybe not all related buffers shown"
   endif
 
   let actionList = ['vsplit','split','call win_gotoid(win_getid(3)) | split',
@@ -117,3 +117,4 @@ command! -nargs=1 GoWin call MoveToWin(<f-args>)
 " write the buffer and edit the file, like "Save as...", there is ":saveas", same
 command! -nargs=1 -complete=file W write <args> | edit <args>
 command! -nargs=1 -complete=buffer B call MoveToOpenBuf(<f-args>)
+

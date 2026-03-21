@@ -54,7 +54,7 @@ require('lazy').setup({
     ----------------
    -- 0.1.7 for nvim 0.10
     {'nvim-telescope/telescope.nvim', tag='0.1.7', dependencies = {'nvim-lua/plenary.nvim'}},
-
+    --TODO why need telescope-fzf-native.nvim? from Kickstart.nvim?
     --'nvim-telescope/telescope-fzf-native.nvim',
     ----------------
     -- LSP
@@ -82,12 +82,12 @@ require('lazy').setup({
     -- CPP
     ----------------
     -- could be found in under  .local/share/nvim/site/pack/packer/start/a.vim/plugin/a.vim
-
+    -- if not using packer.nvim, how should a.vim be put?
     -- 'vim-scripts/a.vim', -- as 'cis' in insert mode make trouble
   --
     ----------------
     -- Markdown
-
+    -- if want to use obsidian with nvim: https://github.com/epwalsh/obsidian.nvim
     -- its config is in treesitter.lua
     ----------------
     -- {
@@ -140,8 +140,8 @@ require('lazy').setup({
       config = function()
         ---@type opencode.Opts
         vim.g.opencode_opts = {
-
-
+          -- Your configuration, if any — see `lua/opencode/config.lua`, or "goto definition".
+          -- it suppose to open nvim in a tmux session, and C-. will toogle a split window in Tmux
           server = {
             enabled = "tmux", -- Default when running inside a `tmux` session.
             -- tmux = {
@@ -160,7 +160,7 @@ require('lazy').setup({
         vim.keymap.set({ "n", "t" }, "<C-.>", function() require("opencode").toggle() end,                          { desc = "Toggle opencode" })
         vim.keymap.set("n",        "<S-C-u>", function() require("opencode").command("session.half.page.up") end,   { desc = "opencode half page up" })
         vim.keymap.set("n",        "<S-C-d>", function() require("opencode").command("session.half.page.down") end, { desc = "opencode half page down" })
-
+        -- You may want these if you stick with the opinionated "<C-a>" and "<C-x>" above — otherwise consider "<leader>o".
         vim.keymap.set('n', '+', '<C-a>', { desc = 'Increment', noremap = true })
         vim.keymap.set('n', '-', '<C-x>', { desc = 'Decrement', noremap = true })
       end,

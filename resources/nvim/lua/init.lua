@@ -17,13 +17,13 @@ vim.opt.rtp:prepend(lazypath) --rtp: runtimepath
 -- Load the *.lua under lua, for .lua under other subfolder: require('subforlder.filename')
 -- Load the nvim plguins, look for plugins.lua under lua/
 
-
+-- control on my different machines' config
 
 -- on nvim 0.10
 SUSEenv = {
   TS_VERSION='v0.9.3', -- the treesitter version, but html highlight is buggy, causing nvim to terminate
   TS_92_HTML_HL_BUG=true,  -- specfic and workaround to disable TS html highlight
-  TELESCOPE_SEND_SELECTED_TO_QFLIST="<A-q>",
+  TELESCOPE_SEND_SELECTED_TO_QFLIST="<A-q>", -- the keyremap for telescope, don't use single quote, no idea why
 }
 
 -- on nvim 0.9.2
@@ -33,7 +33,7 @@ MacOSenv  = {
 }
 
 
-
+-- # MyMistakes: lua quirk, 0 is not false, but positive
 if vim.fn.has('macunix')==1 then
   vim.g.diffEnvs = MacOSenv
 else
@@ -58,7 +58,7 @@ opt.inccommand = 'nosplit'
 -----------------------
 -- WSL nvim clipboard support
 -- https://mitchellt.com/2022/05/15/WSL-Neovim-Lua-and-the-Windows-Clipboard.html
-
+-- need to download the win32yank.exe first
 -- https://github.com/neovim/neovim/wiki/FAQ#how-to-use-the-windows-clipboard-from-wsl
 -----------------------
 
@@ -89,4 +89,5 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 -----------------------
 vim.cmd([[
 ]])
+
 

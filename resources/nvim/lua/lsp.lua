@@ -42,14 +42,14 @@ local on_attach = function(client, bufnr)
   --  vim.lsp.buf.format()
   --end, { desc = 'Format current buffer with LSP' })
 
-
+  -- TODO have a logic check if there is Telescope
   --vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
   opts['desc']='[G]o to [R]eferences with Telescope'
   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>Telescope lsp_references<CR>', opts)
   opts['desc']='List [D]ocument [S]ymbols in current buffer with Telescope'
   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ds', '<cmd>Telescope lsp_document_symbols<CR>', opts)
   opts.desc=nil
-
+  --TODO what is lsp_dynmaic_workspace_symbol? nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
   --nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
 end
@@ -73,7 +73,7 @@ local servers = {
     },
   },
   emmet_language_server ={},
-
+  -- TODO not really LSP, but may need this: https://github.com/Jezda1337/nvim-html-css
   cssls = {},
 
   lua_ls = {
@@ -98,7 +98,7 @@ mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
 }
 
-
+-- Mason updated, need not this anymore, but old version would need this
 -- mason_lspconfig.setup_handlers {
 --   function(server_name)
 --     require('lspconfig')[server_name].setup {
