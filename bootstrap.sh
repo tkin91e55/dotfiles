@@ -6,12 +6,40 @@ cd "$(dirname "${BASH_SOURCE}")";
 
 git pull origin main;
 
+function link_nvim_config() {
+  local nvim_config_dir="${HOME}/.config/nvim"
+  local source_nvim_dir="$(pwd)/resources/nvim"
+
+  mkdir -p "${nvim_config_dir}/lua"
+
+  ln -sfn "${source_nvim_dir}/init.vim" "${nvim_config_dir}/init.vim"
+  ln -sfn "${source_nvim_dir}/common.vim" "${nvim_config_dir}/common.vim"
+  ln -sfn "${source_nvim_dir}/bufsMng.vim" "${nvim_config_dir}/bufsMng.vim"
+
+  for lua_file in "${source_nvim_dir}"/lua/*.lua; do
+    ln -sfn "${lua_file}" "${nvim_config_dir}/lua/$(basename "${lua_file}")"
+  done
+}
+
+function install_terminal_tools() {
+  local z_lua_path="${HOME}/.local/bin"
+
+  apt install lua5.4
+  mkdir -p "${z_lua_path}"
+  wget https://raw.githubusercontent.com/skywind3000/z.lua/master/z.lua -O "${z_lua_path}/z.lua"
+  chmod +x "${z_lua_path}/z.lua"
+  echo "eval \"\$(lua ${z_lua_path}/z.lua --init bash)\"" >> ~/.bashrc
+  source ~/.bashrc
+}
+
 function doIt() {
   rsync --exclude ".git/" \
     --exclude "bootstrap.sh" \
     --exclude "README.md" \
     --exclude "LICENSE" \
+    --exclude "resources/nvim/" \
     -avh --no-perms . ~;
+  link_nvim_config
   source ~/.bash_profile;
 }
 
@@ -24,16 +52,13 @@ else
     doIt;
     mkdir -p ~/.vim/autoload
     cp $(pwd)/resources/vim/plug.vim ~/.vim/autoload/
+
     vi +PlugInstall +qall
 
-    apt install lua5.4
-    Z_LUA_PATH="${HOME}/.local/bin"
-    mkdir -p $Z_LUA_PATH
-    wget https://raw.githubusercontent.com/skywind3000/z.lua/master/z.lua -O $Z_LUA_PATH/z.lua
-    chmod +x $Z_LUA_PATH/z.lua
-    echo "eval \"\$(lua $Z_LUA_PATH/z.lua --init bash)\"" >> ~/.bashrc
-    source ~/.bashrc
+    install_terminal_tools
 
   fi;
 fi;
+unset link_nvim_config;
+unset install_terminal_tools;
 unset doIt;
