@@ -4,11 +4,6 @@ set -e
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-if [ "${EUID}" -eq 0 ]; then
-  echo "Run ./init_shell_packages.sh as root for package installation."
-  echo "Run ./init_shell.sh as the target user for oh-my-zsh and theme setup."
-  exit 1
-fi
 
 function install_oh_my_zsh() {
   local omz_dir="${HOME}/.oh-my-zsh"
@@ -31,10 +26,16 @@ function link_shell_config() {
   ln -sfn "$(pwd)/.p10k.zsh" "${HOME}/.p10k.zsh"
 }
 
+function set_default_shell() {
+  chsh -s /usr/bin/zsh
+}
+
 install_oh_my_zsh
 install_powerlevel10k
 link_shell_config
+set_default_shell
 
 unset install_oh_my_zsh
 unset install_powerlevel10k
 unset link_shell_config
+unset set_default_shell
